@@ -5,24 +5,20 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.configs.TorqueCurrentConfigs;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants;
 import frc.robot.ESPN.E_Motor;
-
+// entire class made completely useless because of the way I did drivetrain, truck it.
+// I think lyra doesnt even use this, why did we make this?
 public class SwerveModule {
 
 
@@ -42,7 +38,7 @@ public class SwerveModule {
   private final SimpleMotorFeedforward angleFF;
   private final PIDController speedPID;
   private final SimpleMotorFeedforward speedFF;
-
+  
 
   public SwerveModule(String moduleName, Translation2d location, double gearRatio, int speedID, int angleID, int encoderID, double zero) {
     this.MODULE_NAME = moduleName;

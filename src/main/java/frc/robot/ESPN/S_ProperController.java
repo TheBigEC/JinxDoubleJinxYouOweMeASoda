@@ -1,7 +1,7 @@
 package frc.robot.ESPN;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
@@ -57,6 +57,11 @@ public class S_ProperController extends CommandXboxController {
 
   public double getRightX(Scale scale) {
     return getOutput(this.getRightX(), scale);
+
+  }
+
+  public Trigger getStartButton() {
+    return this.start();
   }
 
 

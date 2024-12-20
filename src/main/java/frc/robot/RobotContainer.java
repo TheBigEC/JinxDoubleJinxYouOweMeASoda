@@ -4,17 +4,14 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.ESPN.S_ProperController;
 import frc.robot.ESPN.S_ProperController.Scale;
-import frc.robot.commands.Autos;
-import frc.robot.commands.ExampleCommand;
-import frc.robot.commands.Shoot;
-import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.drivetrain.RockPaperScissors;
 import frc.robot.subsystems.drivetrain.TunerConstants;
+
+
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /**
@@ -27,18 +24,18 @@ public class RobotContainer {
   Trigger drivingInput = new Trigger(() -> (pilot.getCorrectedLeft().getNorm() != 0.0 || pilot.getCorrectedRight().getX() != 0.0));
   private final RockPaperScissors drivetrain = TunerConstants.DriveTrain;
   // The robot's subsystems and commands are defined here...
-  private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
+  private boolean useFieldCentric = true;  // Track which drive mode we're in
 
   public static S_ProperController pilot = new S_ProperController(Constants.controller.PILOT_PORT);
   public static S_ProperController copilot = new S_ProperController(Constants.controller.COPILOT_PORT);
   // Replace with CommandPS4Controller or CommandJoystick if needed
-  private final CommandXboxController m_driverController =
-      new CommandXboxController(1);
+
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
+    SetDefaultCommands();
   }
 private void SetDefaultCommands(){
   drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
@@ -49,18 +46,60 @@ private void SetDefaultCommands(){
 
   private void configureBindings() {
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-    new Trigger(m_exampleSubsystem::exampleCondition)
-        .onTrue(new ExampleCommand(m_exampleSubsystem));
-
+  
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // cancelling on release.
-    m_driverController.b().whileTrue(new Shoot());
 
-    drivingInput.onTrue(RockPaperScissors.drive(-pilot.getCorrectedLeft().getX() * 1.0, // Drive forward with
-                                                                                           // negative Y (forward)
-            -pilot.getCorrectedLeft().getY() * 1.0, // Drive left with negative X (left)
-            pilot.getRightX(Scale.SQUARED) * 0.7 // Drive counterclockwise with negative X (left)
-        ));}
+       pilot.b().whileTrue(drivetrain.defenseMode());
+    
+
+        // default
+   
+        pilot.getStartButton().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
+
+      
+      
+
+      pilot.x().onTrue(Commands.runOnce(() -> useFieldCentric = !useFieldCentric));
+
+      // Use the appropriate drive mode based on the toggle
+      drivingInput.onTrue(Commands.either(
+        // Field-centric mode branch
+        Commands.either(
+            // Normal speed field-centric
+            drivetrain.drive(
+                -pilot.getCorrectedLeft().getX(),
+                -pilot.getCorrectedLeft().getY(),
+                pilot.getRightX(Scale.SQUARED) * 0.7
+            ),
+            // Slow speed field-centric
+            drivetrain.drive(
+                -pilot.getCorrectedLeft().getX() * 0.3,  // 30% speed for precise control
+                -pilot.getCorrectedLeft().getY() * 0.3,
+                pilot.getRightX(Scale.SQUARED) * 0.7 * 0.3
+            ),
+            () -> !pilot.leftBumper().getAsBoolean()  // Left bumper toggles slow mode
+        ),
+        // Robot-centric mode branch
+        Commands.either(
+            // Normal speed robot-centric
+            drivetrain.robotCentricDrive(
+                -pilot.getCorrectedLeft().getX(),
+                -pilot.getCorrectedLeft().getY(),
+                pilot.getRightX(Scale.SQUARED) * 0.7
+            ),
+            // Slow speed robot-centric
+            drivetrain.robotCentricDrive(
+                -pilot.getCorrectedLeft().getX() * 0.3,  // 30% speed for precise control
+                -pilot.getCorrectedLeft().getY() * 0.3,
+                pilot.getRightX(Scale.SQUARED) * 0.7 * 0.3
+            ),
+            () -> !pilot.leftBumper().getAsBoolean()  // Left bumper toggles slow mode
+        ),
+        () -> useFieldCentric  // X button toggles this boolean
+    ));}
+
+
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -69,6 +108,6 @@ private void SetDefaultCommands(){
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return Autos.exampleAuto(m_exampleSubsystem);
+    return null;
   }
 }
